@@ -2,5 +2,7 @@ FROM node:20-alpine
 WORKDIR /app
 COPY . .
 RUN npm install
-EXPOSE 5000
-CMD ["node", "index.js"]
+
+# Jalankan Vite dev server
+EXPOSE 5173
+CMD ["npm", "run", "dev"]
