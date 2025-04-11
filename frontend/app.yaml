@@ -1,13 +1,3 @@
-runtime: nodejs18
-
-env: flex
-
-entrypoint: npm run start
-
-instance_class: F2
-
-handlers:
-  - url: /static
-    static_dir: dist/
-  - url: /.*
-    script: auto
+runtime: nodejs20  
+env: flex  # environment fleksibel
+entrypoint: npm run start  # Menjalankan aplikasi menggunakan perintah start
