@@ -16,7 +16,7 @@ COPY . .
 # Build aplikasi untuk produksi
 RUN npm run build
 
-# Instal 'serve' untuk menyajikan file statis hasil build
+# Install 'serve' untuk menyajikan file statis hasil build
 RUN npm install -g serve
 
 # Ekspos port 8080, karena Cloud Run dan App Engine biasanya menggunakan port ini
