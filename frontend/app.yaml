@@ -1,11 +1,4 @@
-runtime: nodejs
-env: flex
-
-instance_class: F2  
-
-env_variables:
-  VITE_API_URL: "https://backend-notes-hafizh-136536138076.us-central1.run.app"  
-
+runtime: nodejs20
 handlers:
   - url: /static
     static_dir: dist/
