@@ -1,13 +1,17 @@
 steps:
+  - name: "gcr.io/cloud-builders/npm"
+    dir: "frontend"
+    args: ["install"]
+  - name: "gcr.io/cloud-builders/npm"
+    dir: "frontend"
+    args: ["run", "build"]
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: "bash"
     args:
       [
         "-c",
-        "gcloud config set app/cloud_build_timeout 1600 && gcloud app deploy",
+        "gcloud app deploy frontend/app.yaml --quiet"
       ]
-
-      dir: frontend
 timeout: "1600s"
 
 options:
