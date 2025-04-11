@@ -1,25 +1,26 @@
+# Gunakan image Node.js versi 20 berbasis Alpine
 FROM node:20-alpine
 
-# Set working directory
+# Tentukan direktori kerja di dalam container
 WORKDIR /app
 
-# Copy package.json and package-lock.json first (caching dependencies)
+# Salin file package.json dan package-lock.json terlebih dahulu untuk mengoptimalkan caching
 COPY package.json package-lock.json ./
 
-# Install dependencies
+# Instal dependensi
 RUN npm install
 
-# Copy the rest of the application files
+# Salin seluruh file aplikasi (termasuk file frontend dan konfigurasi)
 COPY . .
 
-# Build the app for production
+# Build aplikasi untuk produksi
 RUN npm run build
 
-# Install serve to serve the built application
+# Instal 'serve' untuk menyajikan file statis hasil build
 RUN npm install -g serve
 
-# Expose port 8080 (Cloud Run and App Engine default port)
+# Ekspos port 8080, karena Cloud Run dan App Engine biasanya menggunakan port ini
 EXPOSE 8080
 
-# Start the app using serve to serve the static files
+# Jalankan aplikasi menggunakan 'serve' untuk menyajikan file statis di port 8080
 CMD ["serve", "-s", "dist", "-l", "8080"]
