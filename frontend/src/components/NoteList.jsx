@@ -1,19 +1,41 @@
 import { useEffect, useState } from 'react';
 import { getNotes, deleteNote } from '../api';
 import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 
 const NoteList = () => {
   const [notes, setNotes] = useState([]);
+  const [user_id, setUser_id] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchNotes();
+  const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    setUser_id(null);
+    return;
+  }
+
+  (async () => {
+    const decoded = jwtDecode(token);
+    setUser_id(decoded.id);
+    console.log("User ID:", decoded.id); 
+  })()
   }, []);
+
+  useEffect(() => {
+    if (user_id) {
+      fetchNotes();
+    }
+  }, [user_id]);
 
   const fetchNotes = async () => {
     try {
       const { data } = await getNotes();
-      setNotes(data);
+
+      const filteredNotes = data.filter(note => note.user_id === user_id)
+
+      setNotes(filteredNotes);
     } catch (error) {
       console.error("Gagal mengambil data:", error);
     }

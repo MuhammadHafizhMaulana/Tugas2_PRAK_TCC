@@ -1,69 +1,118 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { getNotes, updateNote } from '../api';
+import { useEffect, useState } from "react";
+import { useParams, useNavigate,  } from "react-router-dom";
+import { getNoteById } from "../api.js";
+import axios from "axios";
+import { BASE_URL } from "../utils";
+import { jwtDecode } from "jwt-decode";
 
 const EditNote = () => {
-  const { id } = useParams();
+  const { id } = useParams();  // Ambil parameter id dari URL
+  const [note, setNote] = useState({ title:"", content:"" });
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
 
   useEffect(() => {
-    fetchNote();
-  }, []);
+    const token = localStorage.getItem("accessToken");
 
-  const fetchNote = async () => {
-    try {
-      const { data } = await getNotes();
-      const noteToEdit = data.find(note => note.id === parseInt(id));
-      if (noteToEdit) {
-        setTitle(noteToEdit.title);
-        setContent(noteToEdit.content);
-      }
-    } catch (error) {
-      console.error("Gagal mengambil data:", error);
+    if (!token) {
+      setError("Token tidak ditemukan");
+      return;
     }
+  
+    (async () => {
+      try {
+        // Dynamic import jwt-decode agar kompatibel dengan Vite
+        const decoded = jwtDecode(token);
+        const user_id = decoded.id;
+        console.log("User Id : ", user_id);
+        console.log("Token : ", token);
+
+        const response = await getNoteById(id);
+        console.log("Data user id : ", response.data.note.user_id)
+
+        if (response.data.note.user_id !== user_id) {
+          setError("Anda tidak punya akses");
+          navigate("/home");
+        } else {
+          setNote(response.data.note);
+        }
+      } catch (error) {
+        setError("Gagal mengambil data note");
+        console.error(error.message);
+      }
+    })();
+  }, [id, navigate]);
+
+  const handleChange = (e) => {
+    setNote({ ...note, [e.target.name]: e.target.value });
   };
 
-  const handleUpdate = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("accessToken");
+
+    if(!token){
+      setError("Token tidak ditemukan");
+      return;
+    }
+
     try {
-      await updateNote(id, { title, content });
-      navigate('/');
-    } catch (error) {
-      console.error("Gagal mengupdate catatan:", error);
+      const decodedToken = jwtDecode(token);
+      const user_id = decodedToken.id;
+
+      if (note.user_id !== user_id) {
+        setError("Anda tidak mempunyai akses");
+        return;
+      }
+
+      await axios.put(`${BASE_URL}/edit-note/${id}`, note, { 
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      alert("Note berhasil diperbarui!");
+      navigate("/home")
+    } catch (err) {
+      setError("Gagal memperbarui note.");
+      console.error(err.message);
     }
   };
 
   return (
-    <div className="container d-flex justify-content-center align-items-center" style={{ minHeight: '80vh' }}>
-      <div className="col">
-        <div className="card shadow p-5">
-          <h2 className="mb-3 text-center">📝 Edit Catatan</h2>
-          <form onSubmit={handleUpdate}>
+    <div className="container mt-5 d-flex justify-content-center">
+      <div className="col-12">
+        <div className="card shadow p-4">
+          <h2 className="text-center">✍ Perbarui Catatan</h2>
+
+          {error && (
+            <div className="alert alert-danger mt-2" role="alert">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="mt-3">
             <div className="mb-3">
               <label className="form-label">Judul</label>
               <input
                 type="text"
-                className="form-control form-control-lg"
+                className="form-control"
+                name="title"
                 placeholder="Masukkan judul catatan"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
+                value={note.title}
+                onChange={handleChange}
               />
             </div>
             <div className="mb-3">
               <label className="form-label">Isi Catatan</label>
               <textarea
-                className="form-control form-control-lg"
-                rows="4"
+                className="form-control"
+                name="content"
                 placeholder="Masukkan isi catatan"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                required
+                value={note.content}
+                onChange={handleChange}
               ></textarea>
             </div>
-            <button type="submit" className="btn btn-success w-100 btn-lg">Simpan Perubahan</button>
+            <button type="submit" className="btn btn-primary w-100">Update Catatan</button>
           </form>
         </div>
       </div>

@@ -1,14 +1,44 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createNote } from '../api';
+import { jwtDecode } from 'jwt-decode';
+
 
 const NoteForm = ({ onNoteAdded }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [user_id, setUser_id] = useState(null);
+  
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      setUser_id("null");
+      return;
+    }
+    
+    const decodeToken = async() => {
+      try {
+        const decoded = jwtDecode(token);
+        setUser_id(decoded.id);
+      } catch (error) {
+        console.error("Gagal decode token : ",error);
+        setUser_id(null);
+        
+      }
+    };
+
+    decodeToken();
+  },[]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if(!user_id){
+      console.error("user id gaada");
+      return;
+    }
+
     try {
-      await createNote({ title, content });
+      await createNote({ title, content, user_id });
       setTitle('');
       setContent('');
       onNoteAdded();
