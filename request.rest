@@ -22,3 +22,14 @@ Content-Type: application/json
 
 ###
 DELETE  http://localhost:5000/delete-note/2
+
+###
+POST http://localhost:5000/users
+Content-Type: application/json
+
+{
+    "name" : "admin",
+    "email" : "admin@gmail.com",
+    "password" : "1234"
+
+}
